@@ -8,6 +8,9 @@ import authRoutes from "./routes/auth.routes.ts";
 import businessRoutes from "./routes/business.routes.ts";
 import reviewRoutes from "./routes/review.routes.ts";
 import userRoutes from "./routes/user.routes.ts";
+const dotenv = require("dotenv");
+dotenv.config();
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
