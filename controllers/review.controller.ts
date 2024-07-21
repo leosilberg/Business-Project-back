@@ -1,12 +1,13 @@
 import type { Request, Response } from "express";
 import type { Server } from "socket.io";
 import Review from "../models/review.model.ts";
+import User from "../models/user.model.ts";
 import type { AuthRequest } from "../types/authTypes.ts";
 
 export async function getReviewsByBusinessId(req: Request, res: Response) {
   const { businessId } = req.params;
   try {
-    const reviews = await Review.find({ business: businessId });
+    const reviews = await Review.find({ businessId: businessId });
     res.status(200).json(reviews);
   } catch (error) {
     console.log(`review.controller: `, (error as Error).message);
@@ -34,13 +35,25 @@ export async function getReview(req: Request, res: Response) {
 export async function createReview(req: Request, res: Response) {
   const { businessId } = req.params;
   const userId = (req as AuthRequest).userId;
-  const { content } = req.body;
+  const { title, description, rating } = req.body;
   try {
+    const user = await User.findById(userId);
+    if (!user) {
+      console.log(`review.controller: Not found user`, userId);
+      return res.status(401).json("No user found");
+    }
+
+    const { username } = user;
+
     const newReview = new Review({
-      content,
-      business: businessId,
-      user: userId,
+      title,
+      description,
+      username,
+      rating,
+      businessId: businessId,
+      userId: userId,
     });
+
     const savedReview = await newReview.save();
     const io = req.app.get("io") as Server;
     io.to(businessId).emit("newReview", savedReview);
@@ -57,11 +70,11 @@ export async function createReview(req: Request, res: Response) {
 
 export async function editReview(req: Request, res: Response) {
   const { reviewId } = req.params;
-  const { content } = req.body;
+
   try {
     const updatedReview = await Review.findOneAndUpdate(
       { _id: reviewId },
-      { content },
+      req.body,
       {
         new: true,
         runValidators: true,

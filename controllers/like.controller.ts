@@ -22,8 +22,8 @@ export async function likeReview(req: Request, res: Response) {
     }
 
     const newLike = new Like({
-      review: reviewId,
-      user: userId,
+      reviewId: reviewId,
+      userId: userId,
     });
     const savedLike = await newLike.save();
 
@@ -39,8 +39,8 @@ export async function removeLikeReview(req: Request, res: Response) {
   const userId = (req as AuthRequest).userId;
   try {
     const deletedLike = await Like.findOneAndDelete({
-      review: reviewId,
-      user: userId,
+      reviewId: reviewId,
+      userId: userId,
     });
 
     if (!deletedLike) {

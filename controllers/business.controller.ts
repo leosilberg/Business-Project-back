@@ -1,9 +1,32 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import Business from "../models/business.model.ts";
+import Review from "../models/review.model.ts";
 
 export async function getBusinesses(req: Request, res: Response) {
   try {
-    const businesses = await Business.find();
+    const businesses = await Review.aggregate([
+      {
+        $group: { _id: "$businessId", avgRating: { $avg: "$rating" } },
+      },
+      {
+        $lookup: {
+          from: "businesses",
+          localField: "_id",
+          foreignField: "_id",
+          as: "business",
+        },
+      },
+      { $unwind: "$business" },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects: ["$business", { avgRating: "$avgRating" }],
+          },
+        },
+      },
+    ]);
+
     res.status(200).json(businesses);
   } catch (error) {
     console.log(`business.controller: `, (error as Error).message);
@@ -20,7 +43,15 @@ export async function getBusiness(req: Request, res: Response) {
       return res.status(401).json("No business found");
     }
 
-    res.status(200).json(business);
+    const aggregate = await Review.aggregate([
+      { $match: { businessId: new mongoose.Types.ObjectId(businessId) } },
+      { $group: { _id: null, avgRating: { $avg: "$rating" } } },
+    ]);
+
+    res.status(200).json({
+      ...business.toJSON(),
+      avgRating: aggregate.length > 0 ? aggregate[0].avgRating : 0,
+    });
   } catch (error) {
     console.log(`business.controller: `, (error as Error).message);
     res.status(500).json("Server error getting business");
