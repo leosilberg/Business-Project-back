@@ -8,10 +8,11 @@ const { JWT_SECRET } = process.env;
 
 export async function register(req: Request, res: Response) {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, username, firstName, lastName } = req.body;
     const newUser = new User({
       email,
       password,
+      username,
       firstName,
       lastName,
     });
