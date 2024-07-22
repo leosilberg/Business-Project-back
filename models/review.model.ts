@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { updateBusinessRating } from "../controllers/business.controller.ts";
 import type { IReview } from "../types/reviewTypes.ts";
 
 const reviewSchema = new Schema<IReview>(
@@ -17,6 +18,18 @@ const reviewSchema = new Schema<IReview>(
   },
   { timestamps: true }
 );
+
+reviewSchema.post("findOneAndUpdate", async (doc) => {
+  await updateBusinessRating(doc.businessId);
+});
+
+reviewSchema.post("save", async (doc) => {
+  await updateBusinessRating(doc.businessId.toString());
+});
+
+reviewSchema.post("findOneAndDelete", async (doc) => {
+  await updateBusinessRating(doc.businessId);
+});
 
 const Review = model<IReview>("Review", reviewSchema);
 export default Review;
