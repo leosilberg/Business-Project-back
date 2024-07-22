@@ -8,12 +8,10 @@ import {
   deleteReview,
   editReview,
   getReview,
-  getReviewsByBusinessId,
 } from "../controllers/review.controller.ts";
 
 const router = Router();
 
-router.get("/business/:businessId", getReviewsByBusinessId);
 router.post("/business/:businessId", createReview);
 router.get("/:reviewId", getReview);
 router.patch("/:reviewId", editReview);
