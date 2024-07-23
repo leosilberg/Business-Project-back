@@ -24,22 +24,22 @@ reviewSchema.index({ businessId: 1, userId: 1 }, { unique: true });
 
 reviewSchema.post("findOneAndUpdate", async (doc) => {
   try {
-    const business = await updateBusinessRating(doc.businessId);
-    io.to(doc.businessId.toString()).emit("editReview", doc, business);
+    await updateBusinessRating(doc.businessId);
+    io.to(doc.businessId.toString()).emit("editReview", doc);
   } catch (error) {}
 });
 
 reviewSchema.post("save", async (doc) => {
   try {
-    const business = await updateBusinessRating(doc.businessId.toString());
-    io.to(doc.businessId.toString()).emit("addReview", doc, business);
+    await updateBusinessRating(doc.businessId.toString());
+    io.to(doc.businessId.toString()).emit("addReview", doc);
   } catch (error) {}
 });
 
 reviewSchema.post("findOneAndDelete", async (doc) => {
   try {
-    const business = await updateBusinessRating(doc.businessId);
-    io.to(doc.businessId.toString()).emit("deleteReview", doc, business);
+    await updateBusinessRating(doc.businessId);
+    io.to(doc.businessId.toString()).emit("deleteReview", doc);
   } catch (error) {}
 });
 

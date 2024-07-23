@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import mongoose from "mongoose";
 import Review from "../models/review.model.ts";
 import User from "../models/user.model.ts";
 import type { AuthRequest } from "../types/authTypes.ts";
@@ -7,6 +8,30 @@ export async function getReviewsByBusinessId(req: Request, res: Response) {
   const { businessId } = req.params;
   try {
     const reviews = await Review.find({ businessId: businessId });
+    res.status(200).json(reviews);
+  } catch (error) {
+    console.log(`review.controller: `, (error as Error).message);
+    res.status(500).json("Server error getting all reviews");
+  }
+}
+
+export async function getReviewsByUserId(req: Request, res: Response) {
+  const userId = (req as AuthRequest).userId;
+  try {
+    const reviews = await Review.aggregate([
+      { $match: { userId: new mongoose.Types.ObjectId(userId) } },
+      {
+        $lookup: {
+          from: "businesses",
+          localField: "businessId",
+          foreignField: "_id",
+          as: "business",
+        },
+      },
+      {
+        $unwind: "$business",
+      },
+    ]);
     res.status(200).json(reviews);
   } catch (error) {
     console.log(`review.controller: `, (error as Error).message);

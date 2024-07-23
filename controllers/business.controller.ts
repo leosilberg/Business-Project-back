@@ -2,12 +2,12 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import Business from "../models/business.model.ts";
 import Review from "../models/review.model.ts";
-import { IBusiness } from "../types/businessTypes.ts";
 
 interface BusinessQuery {
   page?: string;
   pageCount?: string;
   sortBy?: string;
+  sortOrder?: string;
   name?: string;
   district?: string;
   city?: string;
@@ -24,12 +24,17 @@ export async function getBusinesses(
       ? parseInt(req.query.page)
       : 1;
   const pageCount = req.query.pageCount ? parseInt(req.query.pageCount) : 6;
-  const sortBy = req.query.sortBy ? req.query.sortBy : "name";
+  const sortBy = req.query.sortBy || "name";
+  const sortOrder = req.query.sortOrder
+    ? req.query.sortOrder === "desc"
+      ? -1
+      : 1
+    : 1;
   const name = req.query.name;
   const district = req.query.district;
   const city = req.query.city;
   const category = req.query.category?.split(",");
-  const minRating = req.query.minRating && parseInt(req.query.minRating);
+  const minRating = req.query.minRating && parseFloat(req.query.minRating);
 
   const match = {
     ...(name && { name: { $regex: name, $options: "i" } }),
@@ -46,7 +51,7 @@ export async function getBusinesses(
         $facet: {
           data: [
             {
-              $sort: { [sortBy]: 1 },
+              $sort: { [sortBy]: sortOrder },
             },
             { $skip: (page - 1) * pageCount },
             { $limit: pageCount },
@@ -196,9 +201,7 @@ export async function editBusiness(req: Request, res: Response) {
     }
   }
 }
-export async function updateBusinessRating(
-  businessId: string
-): Promise<IBusiness> {
+export async function updateBusinessRating(businessId: string) {
   try {
     const aggregate = await Review.aggregate([
       { $match: { businessId: new mongoose.Types.ObjectId(businessId) } },
@@ -214,13 +217,6 @@ export async function updateBusinessRating(
         runValidators: true,
       }
     );
-
-    if (!updatedBusiness) {
-      console.log(`business.controller: Not found`, businessId);
-      throw "No business found";
-    }
-
-    return updatedBusiness;
   } catch (error) {
     console.log(`business.controller: update rating`, (error as Error).message);
     throw error;
