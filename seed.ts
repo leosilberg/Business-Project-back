@@ -1,6 +1,4 @@
 import mongoose from "mongoose";
-import { updateBusinessRating } from "./controllers/business.controller.ts";
-import Business from "./models/business.model.ts";
 
 const businesses = [
   {
@@ -520,13 +518,13 @@ const seedData = async () => {
     // const aggregate = await Review.aggregate([
     //   { $group: { _id: "$businessId", avgRating: { $avg: "$rating" } } },
     // ]);
-    const aggregate = await Business.find({});
-    console.log(`seed: `, aggregate);
-    await Promise.all(
-      aggregate.map(async (business) => {
-        await updateBusinessRating(business._id as string);
-      })
-    );
+    // const aggregate = await Business.find({});
+    // console.log(`seed: `, aggregate);
+    // await Promise.all(
+    //   aggregate.map(async (business) => {
+    //     await updateBusinessRating(business._id as string);
+    //   })
+    // );
     // const updatedReview = await Review.updateMany(
     //   {},
     //   { $inc: { likes: 1 } },
@@ -546,6 +544,35 @@ const seedData = async () => {
     // });
     // await Like.insertMany(filledLikes);
 
+    // const duplicates = await Review.aggregate([
+    //   {
+    //     $group: {
+    //       _id: { businessId: "$businessId", userId: "$userId" },
+    //       count: { $sum: 1 },
+    //       docs: { $push: "$_id" },
+    //     },
+    //   },
+    //   {
+    //     $match: {
+    //       count: { $gt: 1 },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       count: 1,
+    //       reviews: { $slice: ["$docs", 1, { $size: "$docs" }] },
+    //     },
+    //   },
+    //   {
+    //     $unwind: "$reviews",
+    //   },
+    // ]);
+    // console.log(`seed: `, duplicates);
+    // // await Promise.all(
+    // //   duplicates.map(async (dups) => {
+    // //     await Review.findByIdAndDelete(dups.reviews.toString());
+    // //   })
+    // // );
     console.log("Data seeded successfully");
   } catch (error) {
     console.error("Error seeding data: ", error);

@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import mongoose from "mongoose";
 import Business from "../models/business.model.ts";
 import Review from "../models/review.model.ts";
+import { IBusiness } from "../types/businessTypes.ts";
 
 interface BusinessQuery {
   page?: string;
@@ -18,8 +19,11 @@ export async function getBusinesses(
   req: Request<unknown, unknown, unknown, BusinessQuery>,
   res: Response
 ) {
-  const page = req.query.page ? parseInt(req.query.page) : 1;
-  const pageCount = req.query.pageCount ? parseInt(req.query.pageCount) : 8;
+  const page =
+    req.query.page && parseInt(req.query.page) > 1
+      ? parseInt(req.query.page)
+      : 1;
+  const pageCount = req.query.pageCount ? parseInt(req.query.pageCount) : 6;
   const sortBy = req.query.sortBy ? req.query.sortBy : "name";
   const name = req.query.name;
   const district = req.query.district;
@@ -192,7 +196,9 @@ export async function editBusiness(req: Request, res: Response) {
     }
   }
 }
-export async function updateBusinessRating(businessId: string) {
+export async function updateBusinessRating(
+  businessId: string
+): Promise<IBusiness> {
   try {
     const aggregate = await Review.aggregate([
       { $match: { businessId: new mongoose.Types.ObjectId(businessId) } },
@@ -208,8 +214,16 @@ export async function updateBusinessRating(businessId: string) {
         runValidators: true,
       }
     );
+
+    if (!updatedBusiness) {
+      console.log(`business.controller: Not found`, businessId);
+      throw "No business found";
+    }
+
+    return updatedBusiness;
   } catch (error) {
     console.log(`business.controller: update rating`, (error as Error).message);
+    throw error;
   }
 }
 
