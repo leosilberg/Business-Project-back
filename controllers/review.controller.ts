@@ -1,5 +1,4 @@
 import type { Request, Response } from "express";
-import type { Server } from "socket.io";
 import Review from "../models/review.model.ts";
 import User from "../models/user.model.ts";
 import type { AuthRequest } from "../types/authTypes.ts";
@@ -7,9 +6,7 @@ import type { AuthRequest } from "../types/authTypes.ts";
 export async function getReviewsByBusinessId(req: Request, res: Response) {
   const { businessId } = req.params;
   try {
-    const reviews = await Review.find({ businessId: businessId }).sort({
-      updatedAt: -1,
-    });
+    const reviews = await Review.find({ businessId: businessId });
     res.status(200).json(reviews);
   } catch (error) {
     console.log(`review.controller: `, (error as Error).message);
@@ -57,8 +54,7 @@ export async function createReview(req: Request, res: Response) {
     });
 
     const savedReview = await newReview.save();
-    const io = req.app.get("io") as Server;
-    io.to(businessId).emit("newReview", savedReview);
+
     res.status(201).json(savedReview);
   } catch (error) {
     console.log(`review.controller: `, (error as Error).message);

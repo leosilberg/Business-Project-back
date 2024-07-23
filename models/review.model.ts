@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { io } from "../config/sockets.ts";
 import { updateBusinessRating } from "../controllers/business.controller.ts";
 import type { IReview } from "../types/reviewTypes.ts";
 
@@ -19,16 +20,27 @@ const reviewSchema = new Schema<IReview>(
   { timestamps: true }
 );
 
+reviewSchema.index({ businessId: 1, userId: 1 }, { unique: true });
+
 reviewSchema.post("findOneAndUpdate", async (doc) => {
-  await updateBusinessRating(doc.businessId);
+  try {
+    const business = await updateBusinessRating(doc.businessId);
+    io.to(doc.businessId.toString()).emit("editReview", doc, business);
+  } catch (error) {}
 });
 
 reviewSchema.post("save", async (doc) => {
-  await updateBusinessRating(doc.businessId.toString());
+  try {
+    const business = await updateBusinessRating(doc.businessId.toString());
+    io.to(doc.businessId.toString()).emit("addReview", doc, business);
+  } catch (error) {}
 });
 
 reviewSchema.post("findOneAndDelete", async (doc) => {
-  await updateBusinessRating(doc.businessId);
+  try {
+    const business = await updateBusinessRating(doc.businessId);
+    io.to(doc.businessId.toString()).emit("deleteReview", doc, business);
+  } catch (error) {}
 });
 
 const Review = model<IReview>("Review", reviewSchema);
