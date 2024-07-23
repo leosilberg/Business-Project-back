@@ -1,4 +1,5 @@
 import { Schema, model } from "mongoose";
+import { io } from "../config/sockets.ts";
 import type { IBusiness } from "../types/businessTypes.ts";
 
 const businessSchema = new Schema<IBusiness>({
@@ -12,5 +13,10 @@ const businessSchema = new Schema<IBusiness>({
   street: { type: String, required: true },
   avgRating: { type: Number, required: true, default: 0 },
 });
+
+businessSchema.post("findOneAndUpdate", async (doc) => {
+  io.emit(doc._id.toString(), doc);
+});
+
 const Business = model<IBusiness>("Business", businessSchema);
 export default Business;

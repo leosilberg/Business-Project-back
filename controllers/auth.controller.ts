@@ -3,7 +3,6 @@ import type { Request, Response } from "express";
 import jwt, { type Secret } from "jsonwebtoken";
 import mongoose, { Error } from "mongoose";
 import User from "../models/user.model";
-
 const { JWT_SECRET } = process.env;
 
 export async function register(req: Request, res: Response) {

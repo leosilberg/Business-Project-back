@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { getReviewsByUserId } from "../controllers/review.controller.ts";
 import {
   deleteUser,
   editUser,
@@ -8,6 +9,7 @@ import {
 const router = Router();
 
 router.get("/", getUser);
+router.get("/reviews", getReviewsByUserId);
 router.patch("/", editUser);
 router.delete("/", deleteUser);
 

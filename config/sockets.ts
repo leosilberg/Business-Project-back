@@ -12,13 +12,14 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log(`index: connected`, socket.id);
-  if (socket.handshake.query.businessId) {
-    console.log(`index: joined room `, socket.handshake.query.businessId);
-    socket.join(socket.handshake.query.businessId);
-  } else {
-    console.log(`index: no businessId provided`);
-    socket.disconnect();
-  }
+  socket.on("joinBusiness", (businessId) => {
+    console.log(`sockets: joined`, businessId);
+    socket.join(businessId);
+  });
+  socket.on("leaveBusiness", (businessId) => {
+    console.log(`sockets: left`, businessId);
+    socket.leave(businessId);
+  });
   socket.on("disconnect", () => {
     console.log(`index: disconnected`, socket.id);
   });

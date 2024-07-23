@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import type { Request, Response } from "express";
 import Like from "../models/like.model.ts";
 import User from "../models/user.model.ts";
@@ -25,20 +26,37 @@ export async function getUser(req: Request, res: Response) {
   }
 }
 
-export async function editUser(req: Request, res: Response) {
+interface UserChanges {
+  password: string;
+  newPassword?: string;
+  newUsername?: string;
+}
+export async function editUser(
+  req: Request<unknown, unknown, UserChanges, unknown>,
+  res: Response
+) {
   const userId = (req as AuthRequest).userId;
+  const { password, ...changes } = req.body;
   try {
-    const updatedUser = await User.findOneAndUpdate({ _id: userId }, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await User.findById(userId);
 
-    if (!updatedUser) {
-      console.log(`user.controller: Not found `, userId);
-      return res.status(401).json("No user found");
+    if (!user) {
+      console.log(`auth.controller: user not found`);
+      return res.status(401).json("User not found");
     }
 
-    res.status(200).json(updatedUser);
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+      console.log(`auth.controller: password incorrect`);
+      return res.status(401).json("Email or password are incorrect");
+    }
+
+    user.password = changes.newPassword || user.password;
+    user.username = changes.newUsername || user.username;
+
+    user.save();
+    res.status(200).json("User details changed");
   } catch (error) {
     console.log(`user.controller: `, (error as Error).message);
     if ((error as Error).name === "ValidationError") {
