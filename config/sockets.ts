@@ -12,13 +12,13 @@ const io = new Server(server, {
 
 io.on("connection", (socket) => {
   console.log(`index: connected`, socket.id);
-  socket.on("joinBusiness", (businessId) => {
-    console.log(`sockets: joined`, businessId);
-    socket.join(businessId);
+  socket.on("joinRoom", (id) => {
+    console.log(`sockets: joined`, id);
+    socket.join(id);
   });
-  socket.on("leaveBusiness", (businessId) => {
-    console.log(`sockets: left`, businessId);
-    socket.leave(businessId);
+  socket.on("leaveRoom", (id) => {
+    console.log(`sockets: left`, id);
+    socket.leave(id);
   });
   socket.on("disconnect", () => {
     console.log(`index: disconnected`, socket.id);

@@ -25,21 +25,27 @@ reviewSchema.index({ businessId: 1, userId: 1 }, { unique: true });
 reviewSchema.post("findOneAndUpdate", async (doc) => {
   try {
     await updateBusinessRating(doc.businessId);
-    io.to(doc.businessId.toString()).emit("editReview", doc);
+    io.to(doc.businessId.toString())
+      .to(doc.userId.toString())
+      .emit("editReview", doc);
   } catch (error) {}
 });
 
 reviewSchema.post("save", async (doc) => {
   try {
     await updateBusinessRating(doc.businessId.toString());
-    io.to(doc.businessId.toString()).emit("addReview", doc);
+    io.to(doc.businessId.toString())
+      .to(doc.userId.toString())
+      .emit("addReview", doc);
   } catch (error) {}
 });
 
 reviewSchema.post("findOneAndDelete", async (doc) => {
   try {
     await updateBusinessRating(doc.businessId);
-    io.to(doc.businessId.toString()).emit("deleteReview", doc);
+    io.to(doc.businessId.toString())
+      .to(doc.userId.toString())
+      .emit("deleteReview", doc);
   } catch (error) {}
 });
 
